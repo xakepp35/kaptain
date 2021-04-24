@@ -30,14 +30,14 @@ func PodsDelete() http.HandlerFunc {
 		switch r.Method {
 		case http.MethodGet:
 			urlQuery := r.URL.Query()
-			podName, ok := urlQuery["name"]
-			if !ok {
-				BadRequest(w, errors.FieldIsMissing, "name")
-				return
-			}
 			podNamespace, ok := urlQuery["namespace"]
 			if !ok {
 				BadRequest(w, errors.FieldIsMissing, "namespace")
+				return
+			}
+			podName, ok := urlQuery["name"]
+			if !ok {
+				BadRequest(w, errors.FieldIsMissing, "name")
 				return
 			}
 			err := models.PodsDelete(r.Context(), podNamespace[0], podName[0])
