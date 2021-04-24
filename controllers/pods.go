@@ -29,12 +29,13 @@ func PodsDelete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
-			podName, ok := r.URL.Query()["name"]
+			urlQuery := r.URL.Query()
+			podName, ok := urlQuery["name"]
 			if !ok {
 				BadRequest(w, errors.FieldIsMissing, "name")
 				return
 			}
-			podNamespace, ok := r.URL.Query()["namespace"]
+			podNamespace, ok := urlQuery["namespace"]
 			if !ok {
 				BadRequest(w, errors.FieldIsMissing, "namespace")
 				return
