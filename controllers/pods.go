@@ -5,14 +5,13 @@ import (
 
 	"github.com/xakepp35/kaptain/errors"
 	"github.com/xakepp35/kaptain/models"
-	"github.com/xakepp35/kaptain/processors"
 )
 
 func PodsList() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
-			podList := processors.PodsMapCopy()
+			podList := models.PodsMapCopy()
 			// if err != nil {
 			// 	InternalServerError(w, errors.APIFailed, "models.PodsList()", err)
 			// 	return

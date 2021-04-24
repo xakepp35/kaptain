@@ -2,12 +2,35 @@ package models
 
 import (
 	"context"
+	"sync"
 
 	"github.com/xakepp35/kaptain/config"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/watch"
 )
+
+var PodsMap sync.Map
+
+func PodsMapCopy() map[types.UID]*v1.Pod {
+	podsMap := make(map[types.UID]*v1.Pod)
+	PodsMap.Range(func(k, v interface{}) bool {
+		podsMap[k.(types.UID)] = v.(*v1.Pod)
+		return true
+	})
+	return podsMap
+}
+
+func PodsMapEvent(event watch.Event) {
+	podEntity := event.Object.(*v1.Pod)
+	switch event.Type {
+	case watch.Added, watch.Modified:
+		PodsMap.Store(podEntity.UID, podEntity)
+	case watch.Deleted:
+		PodsMap.Delete(podEntity.UID)
+	}
+}
 
 //PodsList return the Pods from k8s
 func PodsList(ctx context.Context) (*v1.PodList, error) {

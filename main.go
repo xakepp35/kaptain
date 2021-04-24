@@ -6,6 +6,8 @@ import (
 	"os"
 	"time"
 
+	socketio "github.com/googollee/go-socket.io"
+
 	"github.com/xakepp35/kaptain/config"
 	"github.com/xakepp35/kaptain/controllers"
 	"github.com/xakepp35/kaptain/errors"
@@ -28,18 +30,32 @@ func main() {
 	initLogger()
 	log.Infof("Starting %s version %s", appName, appVersion)
 
-	go processors.PodsListWatch(ctx)
+	sio, err := socketio.NewServer(nil)
+	if err != nil {
+		log.Fatalf(errors.APIFailed, "socketio.NewServer()", err)
+	}
 
+	// socket.io handlers
+	sio.OnConnect("/", controllers.SIOConnect())
+	sio.OnDisconnect("/", controllers.SIODisconnect())
+	sio.OnError("/", controllers.SIOError())
+	sio.OnEvent("/pods", "delete", controllers.SIOPodsDelete())
+
+	// htto handlers
 	http.Handle("/", controllers.FileServer(assetsDirectory))
+	http.Handle("/socket.io/", sio)
 	http.Handle("/api/ping", controllers.Ping())
 	http.Handle("/api/k8s/server/version", controllers.K8sServerVersion())
 	http.Handle("/api/k8s/pods/list", controllers.PodsList())
 	http.Handle("/api/k8s/pods/delete", controllers.PodsDelete())
 
+	// start processors
+	go processors.PodsListWatch(ctx, sio)
+
 	log.Infof("Service %s is listening on %s", appName, config.Data.APIEndpoint)
-	err := http.ListenAndServe(config.Data.APIEndpoint, nil)
+	err = http.ListenAndServe(config.Data.APIEndpoint, nil)
 	if err != nil {
-		log.Errorf(errors.APIFailed, "http.ListenAndServe()", err)
+		log.Fatalf(errors.APIFailed, "http.ListenAndServe()", err)
 	}
 }
 
