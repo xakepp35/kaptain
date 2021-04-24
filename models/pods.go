@@ -40,3 +40,15 @@ func PodsWatch(ctx context.Context) (watch.Interface, error) {
 	}
 	return podsWatch, nil
 }
+
+//PodsDelete func
+func PodsDelete(ctx context.Context, podNamespace, podName string) error {
+	clientset, err := K8sClientset(config.Data.KubeConfigPath)
+	if err != nil {
+		return err
+	}
+	return clientset.
+		CoreV1().
+		Pods(podNamespace).
+		Delete(ctx, podName, metav1.DeleteOptions{})
+}

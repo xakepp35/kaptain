@@ -3,6 +3,8 @@ package controllers
 import (
 	"net/http"
 
+	"github.com/xakepp35/kaptain/errors"
+	"github.com/xakepp35/kaptain/models"
 	"github.com/xakepp35/kaptain/processors"
 )
 
@@ -16,6 +18,33 @@ func PodsList() http.HandlerFunc {
 			// 	return
 			// }
 			RespondJSON(w, podList)
+		default:
+			MethodNotAllowed(w, r)
+		}
+
+	}
+}
+
+func PodsDelete() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			podName, ok := r.URL.Query()["name"]
+			if !ok {
+				BadRequest(w, errors.FieldIsMissing, "name")
+				return
+			}
+			podNamespace, ok := r.URL.Query()["namespace"]
+			if !ok {
+				BadRequest(w, errors.FieldIsMissing, "namespace")
+				return
+			}
+			err := models.PodsDelete(r.Context(), podNamespace[0], podName[0])
+			if err != nil {
+				InternalServerError(w, errors.APIFailed, "models.PodsDelete()", err)
+				return
+			}
+			RequestProcessed(w, r)
 		default:
 			MethodNotAllowed(w, r)
 		}

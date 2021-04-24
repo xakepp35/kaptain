@@ -25,6 +25,7 @@ func main() {
 	http.Handle("/api/ping", controllers.Ping())
 	http.Handle("/api/k8s/server/version", controllers.K8sServerVersion())
 	http.Handle("/api/k8s/pods/list", controllers.PodsList())
+	http.Handle("/api/k8s/pods/delete", controllers.PodsDelete())
 
 	log.Infof("kaptain is listening on %s", config.Data.APIEndpoint)
 	err := http.ListenAndServe(config.Data.APIEndpoint, nil)
