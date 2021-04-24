@@ -33,16 +33,6 @@ func PodsListWatch(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		default:
-			/*log.Debugf("Fetching pods list")
-			podsList, err := models.PodsList(ctx)
-			if err != nil {
-				time.Sleep(1 * time.Second)
-				continue
-			}
-			log.Debugf("Fetched pods list with %d pods", len(podsList.Items))
-			for i := range podsList.Items {
-				PodsMap.Store(podsList.Items[i].UID, &podsList.Items[i])
-			}*/
 			watchEntity, err := models.PodsWatch(ctx)
 			if err != nil {
 				time.Sleep(1 * time.Second)
@@ -55,14 +45,14 @@ func PodsListWatch(ctx context.Context) {
 }
 
 func PodsEventsWorker(ctx context.Context, eventCh <-chan watch.Event) error {
+	timerWatchRestart := time.NewTimer(periodWatchRestart)
 	for {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
 		case event, ok := <-eventCh:
 			if !ok {
-				// the channel got closed
-				return fmt.Errorf("Kubernetes hung up on us, restarting event watcher")
+				return fmt.Errorf("Watch channel closed")
 			}
 			podEntity := event.Object.(*v1.Pod)
 			log.Debugf("Event: %s, Entity: Pod", event.Type)
@@ -72,7 +62,7 @@ func PodsEventsWorker(ctx context.Context, eventCh <-chan watch.Event) error {
 			case watch.Deleted:
 				PodsMap.Delete(podEntity.UID)
 			}
-		case <-time.After(periodWatchRestart):
+		case <-timerWatchRestart.C:
 			// deal with the issue where we get no events
 			return fmt.Errorf("Timeout, restarting event watcher")
 		}

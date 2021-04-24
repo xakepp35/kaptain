@@ -21,7 +21,6 @@ func PodsList() http.HandlerFunc {
 		default:
 			MethodNotAllowed(w, r)
 		}
-
 	}
 }
 
@@ -49,6 +48,5 @@ func PodsDelete() http.HandlerFunc {
 		default:
 			MethodNotAllowed(w, r)
 		}
-
 	}
 }
