@@ -265,14 +265,19 @@ const columns = [
   },
   {
     Header: 'Status',
-    accessor: 'Status', // accessor is the "key" in the data
+    accessor: 'Status',
     Filter: SelectColumnFilter,
     filter: 'includes',
   },
   {
     Header: 'Start Time',
-    accessor: 'StartTime', // accessor is the "key" in the data
+    accessor: 'StartTime', 
   },
+  {
+    Header: 'Node',
+    accessor: 'NodeName', 
+  },
+  
 ]
 
 const mapPodsData = (podsData) => Object.entries(podsData).map(
@@ -282,6 +287,7 @@ const mapPodsData = (podsData) => Object.entries(podsData).map(
     Name: item[1].metadata.name,
     Status: item[1].status.phase,
     StartTime: item[1].status.startTime,
+    NodeName: item[1].spec.nodeName,
   }) :
     ({
       Status: "-",
