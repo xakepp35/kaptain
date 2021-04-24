@@ -22,7 +22,7 @@ func PodsMapCopy() map[types.UID]*v1.Pod {
 	return podsMap
 }
 
-func PodsMapEvent(event watch.Event) {
+func PodsMapEvent(event watch.Event) *v1.Pod {
 	podEntity := event.Object.(*v1.Pod)
 	switch event.Type {
 	case watch.Added, watch.Modified:
@@ -30,6 +30,7 @@ func PodsMapEvent(event watch.Event) {
 	case watch.Deleted:
 		PodsMap.Delete(podEntity.UID)
 	}
+	return podEntity
 }
 
 //PodsList return the Pods from k8s

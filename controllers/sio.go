@@ -16,7 +16,8 @@ type onErrorFunc func(s socketio.Conn, err error)
 
 func SIOConnect() onConnectFunc {
 	return func(s socketio.Conn) error {
-		//s.SetContext("")
+		s.SetContext("")
+		s.Join("bcast")
 		log.Debugf("SIO[%s]: Socket connected: %s", s.ID())
 		podsMap := models.PodsMapCopy()
 		for _, podEntity := range podsMap {

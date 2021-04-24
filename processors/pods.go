@@ -2,6 +2,7 @@ package processors
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -45,7 +46,14 @@ func PodsEventsWorker(ctx context.Context, sio *socketio.Server, eventCh <-chan 
 				return fmt.Errorf("Watch channel closed")
 			}
 			log.Debugf("Event: %s, Entity: Pod", event.Type)
-			models.PodsMapEvent(event)
+			podEntity := models.PodsMapEvent(event)
+			switch event.Type {
+			case watch.Added, watch.Modified:
+				jsPod, _ := json.Marshal(podEntity)
+				sio.BroadcastToRoom("", "bcast", "pod_add", string(jsPod))
+			case watch.Deleted:
+				sio.BroadcastToRoom("", "bcast", "pod_del", string(podEntity.UID))
+			}
 		case <-timerWatchRestart.C:
 			// deal with the issue where we get no events
 			return fmt.Errorf("Timeout, restarting event watcher")
