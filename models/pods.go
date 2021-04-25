@@ -7,6 +7,7 @@ import (
 	"github.com/xakepp35/kaptain/config"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/watch"
 )
@@ -22,14 +23,21 @@ func PodsMapCopy() map[types.UID]*v1.Pod {
 	return podsMap
 }
 
-func PodsMapEvent(event watch.Event) *v1.Pod {
-	podEntity := event.Object.(*v1.Pod)
-	switch event.Type {
-	case watch.Added, watch.Modified:
-		PodsMap.Store(podEntity.UID, podEntity)
-	case watch.Deleted:
-		PodsMap.Delete(podEntity.UID)
+func PodsMapAdd(eventObject runtime.Object) *v1.Pod {
+	podEntity, ok := eventObject.(*v1.Pod)
+	if !ok {
+		return nil
 	}
+	PodsMap.Store(podEntity.UID, podEntity)
+	return podEntity
+}
+
+func PodsMapDel(eventObject runtime.Object) *v1.Pod {
+	podEntity, ok := eventObject.(*v1.Pod)
+	if !ok {
+		return nil
+	}
+	PodsMap.Delete(podEntity.UID)
 	return podEntity
 }
 

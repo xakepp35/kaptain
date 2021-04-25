@@ -6,10 +6,11 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/kataras/neffos"
+	"github.com/xakepp35/kaptain/errors"
 	"github.com/xakepp35/kaptain/models"
 	"k8s.io/apimachinery/pkg/watch"
 
-	socketio "github.com/googollee/go-socket.io"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -18,7 +19,7 @@ const (
 	periodErrorTimeout = 1 * time.Second
 )
 
-func PodsListWatch(ctx context.Context, sio *socketio.Server) {
+func PodsListWatch(ctx context.Context, sio *neffos.Server) {
 	for {
 		select {
 		case <-ctx.Done():
@@ -26,6 +27,7 @@ func PodsListWatch(ctx context.Context, sio *socketio.Server) {
 		default:
 			watchEntity, err := models.PodsWatch(ctx)
 			if err != nil {
+				log.Errorf(errors.APIFailed, "models.PodsWatch()", err)
 				time.Sleep(periodErrorTimeout)
 				continue
 			}
@@ -35,7 +37,7 @@ func PodsListWatch(ctx context.Context, sio *socketio.Server) {
 	}
 }
 
-func PodsEventsWorker(ctx context.Context, sio *socketio.Server, eventCh <-chan watch.Event) error {
+func PodsEventsWorker(ctx context.Context, wsServer *neffos.Server, eventCh <-chan watch.Event) error {
 	timerWatchRestart := time.NewTimer(periodWatchRestart)
 	for {
 		select {
@@ -46,13 +48,24 @@ func PodsEventsWorker(ctx context.Context, sio *socketio.Server, eventCh <-chan 
 				return fmt.Errorf("Watch channel closed")
 			}
 			log.Debugf("Event: %s, Entity: Pod", event.Type)
-			podEntity := models.PodsMapEvent(event)
 			switch event.Type {
 			case watch.Added, watch.Modified:
+				podEntity := models.PodsMapAdd(event.Object)
 				jsPod, _ := json.Marshal(podEntity)
-				sio.BroadcastToRoom("", "bcast", "pod_add", string(jsPod))
+				wsServer.Broadcast(nil, neffos.Message{
+					Namespace: "default",
+					Room:      "pods",
+					Event:     "add",
+					Body:      jsPod,
+				})
 			case watch.Deleted:
-				sio.BroadcastToRoom("", "bcast", "pod_del", string(podEntity.UID))
+				podEntity := models.PodsMapDel(event.Object)
+				wsServer.Broadcast(nil, neffos.Message{
+					Namespace: "default",
+					Room:      "pods",
+					Event:     "del",
+					Body:      []byte(podEntity.UID),
+				})
 			}
 		case <-timerWatchRestart.C:
 			// deal with the issue where we get no events

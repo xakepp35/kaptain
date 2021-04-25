@@ -6,7 +6,8 @@ import (
 	"os"
 	"time"
 
-	socketio "github.com/googollee/go-socket.io"
+	"github.com/kataras/neffos"
+	"github.com/kataras/neffos/gobwas"
 
 	"github.com/xakepp35/kaptain/config"
 	"github.com/xakepp35/kaptain/controllers"
@@ -17,9 +18,10 @@ import (
 )
 
 const (
-	appVersion      = "release-0.1"
-	appName         = "kaptain"
-	assetsDirectory = "./kaptain_front/build"
+	appVersion        = "release-0.1"
+	appName           = "kaptain"
+	assetsDirectory   = "./kaptain_front/build"
+	websocketEndpoint = "/neffos"
 )
 
 func main() {
@@ -30,30 +32,34 @@ func main() {
 	initLogger()
 	log.Infof("Starting %s version %s", appName, appVersion)
 
-	sio, err := socketio.NewServer(nil)
-	if err != nil {
-		log.Fatalf(errors.APIFailed, "socketio.NewServer()", err)
-	}
-
-	// socket.io handlers
-	sio.OnConnect("/", controllers.SIOConnect())
-	sio.OnDisconnect("/", controllers.SIODisconnect())
-	sio.OnError("/", controllers.SIOError())
-	sio.OnEvent("/pods", "delete", controllers.SIOPodsDelete())
+	// websocket handlers
+	wsServer := neffos.New(gobwas.DefaultUpgrader, neffos.Namespaces{
+		"default": neffos.Events{
+			neffos.OnNamespaceConnected:  controllers.SIONamespaceConnect,
+			neffos.OnNamespaceDisconnect: controllers.SIONamespaceDisconnect,
+			neffos.OnRoomJoined:          controllers.SIORoomJoined,
+			neffos.OnRoomLeft:            controllers.SIORoomLeft,
+			"pod_delete":                 controllers.SIOPodDelete,
+		},
+	})
+	wsServer.IDGenerator = neffos.DefaultIDGenerator
+	wsServer.OnConnect = controllers.SIOConnect()
+	wsServer.OnDisconnect = controllers.SIODisconnect()
+	wsServer.OnUpgradeError = controllers.SIOUpgradeError()
 
 	// htto handlers
 	http.Handle("/", controllers.FileServer(assetsDirectory))
-	http.Handle("/socket.io/", sio)
+	http.Handle(websocketEndpoint, wsServer)
 	http.Handle("/api/ping", controllers.Ping())
 	http.Handle("/api/k8s/server/version", controllers.K8sServerVersion())
 	http.Handle("/api/k8s/pods/list", controllers.PodsList())
 	http.Handle("/api/k8s/pods/delete", controllers.PodsDelete())
 
 	// start processors
-	go processors.PodsListWatch(ctx, sio)
+	go processors.PodsListWatch(ctx, wsServer)
 
 	log.Infof("Service %s is listening on %s", appName, config.Data.APIEndpoint)
-	err = http.ListenAndServe(config.Data.APIEndpoint, nil)
+	err := http.ListenAndServe(config.Data.APIEndpoint, nil)
 	if err != nil {
 		log.Fatalf(errors.APIFailed, "http.ListenAndServe()", err)
 	}

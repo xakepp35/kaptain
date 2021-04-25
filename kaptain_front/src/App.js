@@ -5,9 +5,16 @@ import {NavLink, Switch, Route} from 'react-router-dom';
 import { Container, InputGroup, InputGroupAddon, InputGroupText, Input, Button } from 'reactstrap';
 import { useTable, usePagination, useSortBy, useFilters, useGlobalFilter, useAsyncDebounce } from 'react-table'
 import styled from 'styled-components'
-import socketIOClient from 'socket.io-client';
+//import socketIOClient from 'socket.io-client';
+import neffos from 'neffos.js'
 import axios from 'axios'
-import { matchSorter } from 'match-sorter'
+//import { matchSorter } from 'match-sorter'
+
+var scheme = document.location.protocol == "https:" ? "wss" : "ws";
+var port = document.location.port ? ":" + document.location.port : "";
+var wsURL = scheme + "://" + document.location.hostname + port + "/neffos";
+
+const frontVersion = "0.1"
 
 const Styles = styled.div`
   padding: 1rem;
@@ -37,6 +44,11 @@ const Styles = styled.div`
       :last-child {
         border-right: 0;
       }
+    }
+
+    tbody {
+      overflow-y: auto;
+      max-height: 800px;
     }
   }
 `
@@ -122,18 +134,18 @@ function SelectColumnFilter({
   )
 }
 
-function fuzzyTextFilterFn(rows, id, filterValue) {
-  return matchSorter(rows, filterValue, { keys: [row => row.values[id]] })
-}
+// function fuzzyTextFilterFn(rows, id, filterValue) {
+//   return matchSorter(rows, filterValue, { keys: [row => row.values[id]] })
+// }
 
 // Let the table remove the filter if the string is empty
-fuzzyTextFilterFn.autoRemove = val => !val
+//fuzzyTextFilterFn.autoRemove = val => !val
 
 function Table({ columns, data }) {
   const filterTypes = React.useMemo(
     () => ({
       // Add a new fuzzyTextFilterFn filter type.
-      fuzzyText: fuzzyTextFilterFn,
+      //fuzzyText: fuzzyTextFilterFn,
       // Or, override the default text filter to use
       // "startWith"
       text: (rows, id, filterValue) => {
@@ -281,20 +293,13 @@ const columns = [
 ]
 
 const mapPodsData = (podsData) => Object.entries(podsData).map(
-  (item) => item[1].metadata ? 
-  ({
+  (item) => ({
     Namespace: item[1].metadata.namespace,
     Name: item[1].metadata.name,
     Status: item[1].status.phase,
     StartTime: item[1].status.startTime,
     NodeName: item[1].spec.nodeName,
-  }) :
-    ({
-      Status: "-",
-      Name: "-",
-      Namespace: "-",
-      StartTime: '-',
-    })
+  })
 )
 
 const PodsView = (props) => {
@@ -315,54 +320,90 @@ class PodsApp extends React.Component {
   constructor(props) {
     super(props);
     this.state= {
-      PodsData:[{a:1}],
+      PodsData:{},
     }
-    this.socket = this.configureSocket("http://localhost:8765")
+    this.PodsData = {}
     this.handleChange = this.handleChange.bind(this)
     this.startNewGame = this.startNewGame.bind(this)
+    this.configureSocket = this.configureSocket.bind(this)
+    this.addHandler = this.addHandler.bind(this)
+    this.delHandler = this.delHandler.bind(this)
+    this.timerRenderer = this.timerRenderer.bind(this)
   }
 
   handleChange(event) {
     this.setState({[event.target.name]: event.target.value});
   }
 
-  configureSocket = (serverEndpoint) => {
-    var socket = socketIOClient(serverEndpoint);
-    socket.onAny(x => console.dir(x))
-    console.log("connecting")
-    socket.on('connect', () => {
-      console.log("on connection")
-        // if (this.state.channel) {
-        //     this.handleChannelSelect(this.state.channel.id);
-        // }
+  addHandler(nsConn, msg) {
+    // console.log("add")
+    // console.dir(msg)
+    if( msg.Room == "pods") {
+      const podEntity = JSON.parse(msg.Body)
+      if (podEntity.metadata) {
+        // let podsData = {...this.state.PodsData};
+        // podsData[podEntity.metadata.uid]=podEntity
+        // this.setState({
+        //   PodsData: podsData
+        // })
+        this.PodsData[podEntity.metadata.uid]=podEntity
+      }
+    }
+  }
+
+  delHandler(nsConn, msg) {
+    // console.log("del")
+    // console.dir(msg)
+    if( msg.Room == "pods") {
+      const podUID = msg.Body
+      if (podUID) {
+        // let podsData = {...this.PodsData};
+        // delete podsData[podUID]
+        // this.setState({
+        //   PodsData: podsData
+        // })
+        delete this.PodsData[podUID]
+      }
+    }
+  }
+
+  timerRenderer() {
+    this.setState({
+      PodsData: this.PodsData
+    })
+  }
+
+  async configureSocket(serverEndpoint) {
+    //console.dir(this);
+    const conn = await neffos.dial(wsURL, {
+      default: { // "default" namespace.
+          _OnNamespaceConnected: function (nsConn, msg) {
+              console.log("connected to namespace: " + msg.Namespace);
+             // handleNamespaceConnectedConn(nsConn);
+          },
+          _OnNamespaceDisconnect: function (nsConn, msg) {
+            console.log("disconnected from namespace: " + msg.Namespace);
+          },
+          _OnRoomJoined: function (nsConn, msg) {
+            console.log("joined to room: " + msg.Room);
+          },
+          _OnRoomLeft: function (nsConn, msg) {
+            console.log("left from room: " + msg.Room);
+          },
+          add: this.addHandler,
+          del: this.delHandler,
+      }
+    }, {
+      headers: {
+          'X-Version': frontVersion,
+      },
+      // if > 0 then on network failures it tries to reconnect every 5 seconds, defaults to 0 (disabled).
+      reconnect: 5000
     });
-    socket.on('pod_del', uid => {
-      console.dir(uid)
-        // let channels = this.state.channels;
-        // channels.forEach(c => {
-        //     if (c.id === channel.id) {
-        //         c.participants = channel.participants;
-        //     }
-        // });
-        // this.setState({ channels });
-    });
-    socket.on('pod_add', pod => {
-        console.dir(pod)
-        /*let channels = this.state.channels
-        channels.forEach(c => {
-            if (c.id === message.channel_id) {
-                if (!c.messages) {
-                    c.messages = [message];
-                } else {
-                    c.messages.push(message);
-                }
-            }
-        });
-        this.setState({ channels });*/
-    });
-    socket.connect()
-    return socket;
-}
+
+    await conn.connect("default");
+    return conn
+  }
 
   async startNewGame() {
     //console.dir(this.state);
@@ -376,13 +417,16 @@ class PodsApp extends React.Component {
   }
 
   async componentDidMount() {
-    const res = await axios.get("/api/k8s/pods/list")
-    console.dir(res)
-    this.setState({
-      PodsData:res.data
-    })
-    console.dir(Object.entries(res.data))
+    // const res = await axios.get("/api/k8s/pods/list")
+    // console.dir(res)
+    // this.setState({
+    //   PodsData:res.data
+    // })
+    //console.dir(Object.entries(res.data))
     //this.configureSocket()
+    console.log(wsURL)
+    this.socket = await this.configureSocket(wsURL)
+    setInterval(this.timerRenderer, 500)
 }
   
 
