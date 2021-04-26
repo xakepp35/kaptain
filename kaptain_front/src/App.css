@@ -5,7 +5,7 @@
   flex-flow: column nowrap;
   align-items: stretch;
   justify-content: flex-start;
-  height: 100vh;
+  /* height: 100vh; */
 }
 
 .App-logo {
@@ -21,7 +21,7 @@
 } */
 
 .App-header {
-  background-color: #412706;
+  background-color: #101040;
   /* min-height: 100vh; */
   height: 96px;
   display: flex;
@@ -34,7 +34,7 @@
 
 .App-link {
   padding: 10px 5px;
-  color: #ff9900;
+  color: #00b7ff;
 
 }
 
@@ -45,19 +45,7 @@
 .App-main {
 
   flex: 1;
-  background-color: #ffd8a6;
+  background-color: #204040;
+  color: #ffffff;
   
-}
-
-.App-cont {
-  /* background-color: #ffd8a6; */
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
 }

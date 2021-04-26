@@ -1,18 +1,6 @@
-@font-face {
-  font-family: 'JetBrainsMono Regular';
-  font-style: normal;
-  font-weight: normal;
-  src: local('JetBrainsMono Regular'), url('JetBrainsMono-Regular.woff2') format('woff2');
-}
-
 body {
   margin: 0;
-  font-family: 'Roboto Mono', monospace;
+  font-family: 'JetBrains Mono', monospace;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
 }

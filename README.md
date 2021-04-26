@@ -5,7 +5,8 @@ Kubernetes monitoring and control system
 ## Installation
 
 1. Build frontend
-1.1 Install `nodejs`
+
+ - Install `nodejs`
 
 ```
 # Using Ubuntu
@@ -13,7 +14,8 @@ curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
 sudo apt-get install -y nodejs
 ```
 
-1.2 Install `yarn`
+ - Install `yarn`
+
 ```
 # Using Ubuntu
 curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
@@ -22,7 +24,8 @@ sudo apt update
 sudo apt install yarn
 ```
 
-1.2 Install frontend prequesites and build it
+ - Install frontend prequesites and build it
+
 ```
 cd kaptain_front
 yarn install
@@ -30,16 +33,23 @@ yarn build
 ```
 
 2. Build backend
-2.1 Install go
+
+ - Install go
+
 https://golang.org/doc/install
 
-2.2 build backend
+ - Build backend
+
 ```
 go build
 ```
 
 3. Set up environment
-Following variables are to be set
+
+ - Make sure you  are logged in a kubernetes, have valid config with access token with proper RBAC rights
+
+ - Following variables are to be set:
+
 ```
 API_PORT":"8765",
 KUBE_CONFIG_PATH: "/home/user/.kube/config"

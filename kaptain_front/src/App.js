@@ -1,5 +1,5 @@
 import React from 'react';
-import logo from './logo.svg';
+import logo from './logo.png';
 import './App.css';
 import {NavLink, Switch, Route} from 'react-router-dom';
 import { Container, InputGroup, InputGroupAddon, InputGroupText, Input, Button } from 'reactstrap';
@@ -25,7 +25,7 @@ const Styles = styled.div`
 
   table {
     border-spacing: 0;
-    border: 1px solid black;
+    border: 0; // 1px solid black;
     width: 100%;
 
     tr {
@@ -35,13 +35,16 @@ const Styles = styled.div`
         }
       }
     }
+    tr:hover {
+      background-color: #306060;
+    }
 
     th,
     td {
       margin: 0;
       padding: 1px;
-      border-bottom: 1px solid black;
-      border-right: 1px solid black;
+      // border-bottom: 1px solid black;
+      // border-right: 1px solid black;
 
       :last-child {
         border-right: 0;
