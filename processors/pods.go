@@ -66,6 +66,8 @@ func PodsEventsWorker(ctx context.Context, wsServer *neffos.Server, eventCh <-ch
 					Event:     "del",
 					Body:      []byte(podEntity.UID),
 				})
+			case watch.Error:
+				//log.Errorf
 			}
 		case <-timerWatchRestart.C:
 			// deal with the issue where we get no events

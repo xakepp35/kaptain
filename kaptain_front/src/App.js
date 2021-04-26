@@ -9,6 +9,8 @@ import styled from 'styled-components'
 import neffos from 'neffos.js'
 import axios from 'axios'
 //import { matchSorter } from 'match-sorter'
+//import MaterialTable from 'material-table'
+
 
 var scheme = document.location.protocol == "https:" ? "wss" : "ws";
 var port = document.location.port ? ":" + document.location.port : "";
@@ -106,6 +108,10 @@ function DefaultColumnFilter({
 function SelectColumnFilter({
   column: { filterValue, setFilter, preFilteredRows, id },
 }) {
+  React.useEffect(() => {
+    console.log('select-col-mount');
+    return () => console.log('select-col-unmount');
+    }, []) 
   // Calculate the options for filtering
   // using the preFilteredRows
   const options = React.useMemo(() => {
@@ -168,6 +174,11 @@ function Table({ columns, data }) {
     }),
     []
   )
+
+  React.useEffect(() => {
+    console.log('table-mount');
+    return () => console.log('table-unmount');
+    }, []) 
 
   const {
     getTableProps,
@@ -292,6 +303,29 @@ const columns = [
   
 ]
 
+const columns2=[
+  {
+    title: 'Namespace',
+    field: 'Namespace',
+  },
+  {
+    title: 'Name',
+    field: 'Name',
+  },
+  {
+    title: 'Status',
+    field: 'Status',
+  },
+  {
+    title: 'Start Time',
+    field: 'StartTime', 
+  },
+  {
+    title: 'Node',
+    field: 'NodeName', 
+  }
+]
+
 const mapPodsData = (podsData) => Object.entries(podsData).map(
   (item) => ({
     Namespace: item[1].metadata.namespace,
@@ -303,11 +337,16 @@ const mapPodsData = (podsData) => Object.entries(podsData).map(
 )
 
 const PodsView = (props) => {
+  React.useEffect(() => {
+    console.log('mount');
+    return () => console.log('unmount');
+    }, []) 
   return (
     <div className="App">
       <Styles>
-      <Table columns={columns} data={mapPodsData(props.PodsData)} />
-    </Styles>
+       <Table columns={columns} data={mapPodsData(props.PodsData)} />
+     </Styles>
+     {/* <MaterialTable columns={columns2} data={mapPodsData(props.PodsData)} title="Demo Title" /> */}
           {/*JSON.stringify(props)*/}
     </div>
   );
@@ -426,7 +465,7 @@ class PodsApp extends React.Component {
     //this.configureSocket()
     console.log(wsURL)
     this.socket = await this.configureSocket(wsURL)
-    setInterval(this.timerRenderer, 500)
+    setInterval(this.timerRenderer, 5000)
 }
   
 

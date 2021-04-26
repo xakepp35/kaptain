@@ -12,7 +12,7 @@
             "program": "${workspaceFolder}",
             "env": {
                 "API_PORT":"8765",
-                "KUBE_CONFIG_PATH": "kube/config",
+                "KUBE_CONFIG_PATH": "/home/a/.kube/config",
                 "PLATFORM": "OCP",
                 "KUBERNETES_SERVICE_HOST": "ocp.rct.co.il",
                 "KUBERNETES_SERVICE_PORT": 8443,

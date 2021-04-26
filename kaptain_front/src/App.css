@@ -1,6 +1,6 @@
 
 .App {
-  text-align: center;
+  text-align: left !important;
   display: flex;
   flex-flow: column nowrap;
   align-items: stretch;
