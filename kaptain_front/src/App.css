@@ -5,7 +5,7 @@
   flex-flow: column nowrap;
   align-items: stretch;
   justify-content: flex-start;
-  /* height: 100vh; */
+/* height: 100vh; */
 }
 
 .App-logo {
@@ -13,12 +13,6 @@
   pointer-events: none;
   padding: 10px 5px;
 }
-
-/* @media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-} */
 
 .App-header {
   background-color: #101040;
@@ -35,7 +29,6 @@
 .App-link {
   padding: 10px 5px;
   color: #00b7ff;
-
 }
 
 .App-padded {
@@ -43,9 +36,33 @@
 }
 
 .App-main {
-
   flex: 1;
   background-color: #204040;
   color: #ffffff;
-  
+}
+
+table {
+  border-spacing: 0;
+  border: 0; 
+  /* border: 1px solid black; */
+  width: 100%;
+}
+
+tr:hover {
+  background-color: #306060;
+}
+
+th,
+td {
+  margin: 0;
+  padding: 1px;
+  /* border-bottom: 1px solid black; */
+  /* border-right: 1px solid black; */
+  /* :last-child {
+    border-right: 0;
+  } */
+}
+
+input {
+  width: 100%;
 }

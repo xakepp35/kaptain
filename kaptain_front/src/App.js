@@ -3,18 +3,16 @@ import logo from './logo.png';
 import './App.css';
 import {NavLink, Switch, Route} from 'react-router-dom';
 import { Container, InputGroup, InputGroupAddon, InputGroupText, Input, Button } from 'reactstrap';
-import { useTable, usePagination, useSortBy, useFilters, useGlobalFilter, useAsyncDebounce } from 'react-table'
+import Table from './Table'
 import styled from 'styled-components'
 //import socketIOClient from 'socket.io-client';
 import neffos from 'neffos.js'
 import axios from 'axios'
-//import { matchSorter } from 'match-sorter'
-//import MaterialTable from 'material-table'
 
 
-var scheme = document.location.protocol == "https:" ? "wss" : "ws";
-var port = document.location.port ? ":" + document.location.port : "";
-var wsURL = scheme + "://" + document.location.hostname + port + "/neffos";
+const scheme = document.location.protocol === "https:" ? "wss" : "ws";
+const port = document.location.port ? ":" + document.location.port : "";
+const wsURL = scheme + "://" + document.location.hostname + port + "/neffos";
 
 const frontVersion = "0.1"
 
@@ -22,263 +20,7 @@ const Styles = styled.div`
   padding: 1rem;
   display: block;
   max-width: 100%;
-
-  table {
-    border-spacing: 0;
-    border: 0; // 1px solid black;
-    width: 100%;
-
-    tr {
-      :last-child {
-        td {
-          border-bottom: 0;
-        }
-      }
-    }
-    tr:hover {
-      background-color: #306060;
-    }
-
-    th,
-    td {
-      margin: 0;
-      padding: 1px;
-      // border-bottom: 1px solid black;
-      // border-right: 1px solid black;
-
-      :last-child {
-        border-right: 0;
-      }
-    }
-
-    tbody {
-      overflow-y: auto;
-      max-height: 800px;
-    }
-  }
 `
-
-// Define a default UI for filtering
-function GlobalFilter({
-  preGlobalFilteredRows,
-  globalFilter,
-  setGlobalFilter,
-}) {
-  const count = preGlobalFilteredRows.length
-  const [value, setValue] = React.useState(globalFilter)
-  const onChange = useAsyncDebounce(value => {
-    setGlobalFilter(value || undefined)
-  }, 200)
-
-  return (
-    <span>
-      Search:{' '}
-      <input
-        value={value || ""}
-        onChange={e => {
-          setValue(e.target.value);
-          onChange(e.target.value);
-        }}
-        placeholder={`${count} records...`}
-        style={{
-          fontSize: '1.1rem',
-          border: '0',
-        }}
-      />
-    </span>
-  )
-}
-
-// Define a default UI for filtering
-function DefaultColumnFilter({
-  column: { filterValue, preFilteredRows, setFilter },
-}) {
-  const count = preFilteredRows.length
-
-  return (
-    <input
-      value={filterValue || ''}
-      onChange={e => {
-        setFilter(e.target.value || undefined) // Set undefined to remove the filter entirely
-      }}
-      placeholder={`Search ${count} records...`}
-    />
-  )
-}
-
-// This is a custom filter UI for selecting
-// a unique option from a list
-function SelectColumnFilter({
-  column: { filterValue, setFilter, preFilteredRows, id },
-}) {
-  React.useEffect(() => {
-    console.log('select-col-mount');
-    return () => console.log('select-col-unmount');
-    }, []) 
-  // Calculate the options for filtering
-  // using the preFilteredRows
-  const options = React.useMemo(() => {
-    const options = new Set()
-    preFilteredRows.forEach(row => {
-      options.add(row.values[id])
-    })
-    return [...options.values()]
-  }, [id, preFilteredRows])
-
-  // Render a multi-select box
-  return (
-    <select
-      value={filterValue}
-      onChange={e => {
-        setFilter(e.target.value || undefined)
-      }}
-    >
-      <option value="">All</option>
-      {options.map((option, i) => (
-        <option key={i} value={option}>
-          {option}
-        </option>
-      ))}
-    </select>
-  )
-}
-
-// function fuzzyTextFilterFn(rows, id, filterValue) {
-//   return matchSorter(rows, filterValue, { keys: [row => row.values[id]] })
-// }
-
-// Let the table remove the filter if the string is empty
-//fuzzyTextFilterFn.autoRemove = val => !val
-
-function Table({ columns, data }) {
-  const filterTypes = React.useMemo(
-    () => ({
-      // Add a new fuzzyTextFilterFn filter type.
-      //fuzzyText: fuzzyTextFilterFn,
-      // Or, override the default text filter to use
-      // "startWith"
-      text: (rows, id, filterValue) => {
-        return rows.filter(row => {
-          const rowValue = row.values[id]
-          return rowValue !== undefined
-            ? String(rowValue)
-                .toLowerCase()
-                .startsWith(String(filterValue).toLowerCase())
-            : true
-        })
-      },
-    }),
-    []
-  )
-  const defaultColumn = React.useMemo(
-    () => ({
-      // Let's set up our default Filter UI
-      Filter: DefaultColumnFilter,
-    }),
-    []
-  )
-
-  React.useEffect(() => {
-    console.log('table-mount');
-    return () => console.log('table-unmount');
-    }, []) 
-
-  const {
-    getTableProps,
-    getTableBodyProps,
-    headerGroups,
-    rows,
-    prepareRow,
-    state,
-    visibleColumns,
-    preGlobalFilteredRows,
-    setGlobalFilter,
-  } = useTable(
-    {
-      columns,
-      data,
-      defaultColumn, // Be sure to pass the defaultColumn option
-      filterTypes,
-    },
-    useFilters, // useFilters!
-    useGlobalFilter, // useGlobalFilter!
-    useSortBy
-  )
-
-  // We don't want to render all 2000 rows for this example, so cap
-  // it at 20 for this use case
-  const firstPageRows = rows //rows.slice(0, 40)
-
-  return (
-    <>
-    <div>Found {rows.length} records</div>
-    <br />
-    <GlobalFilter
-                preGlobalFilteredRows={preGlobalFilteredRows}
-                globalFilter={state.globalFilter}
-                setGlobalFilter={setGlobalFilter}
-              />
-      <table {...getTableProps()}>
-        <thead>
-          {headerGroups.map(headerGroup => (
-            <>
-            <tr {...headerGroup.getHeaderGroupProps()}>
-              {headerGroup.headers.map(column => (
-                // Add the sorting props to control sorting. For this example
-                // we can add them into the header props
-                <th {...column.getHeaderProps(column.getSortByToggleProps())}>
-                  {column.render('Header')}
-                  {/* Add a sort direction indicator */}
-                  <span>
-                    {column.isSorted
-                      ? column.isSortedDesc
-                        ? ' 🔽'
-                        : ' 🔼'
-                      : ''}
-                  </span>
-                </th>          
-              ))}
-            </tr>
-            <tr>
-            {headerGroup.headers.map(column => (
-                <th>
-                {/* Render the columns filter UI */}
-                <div>{column.canFilter ? column.render('Filter') : null}</div>
-                            </th>
-              ))}
-            </tr>
-            </>
-          ))}
-          {/* <tr>
-            <th
-              colSpan={visibleColumns.length}
-              style={{
-                textAlign: 'left',
-              }}
-            >
-              
-            </th>
-          </tr> */}
-        </thead>
-        <tbody {...getTableBodyProps()}>
-          {firstPageRows.map(
-            (row, i) => {
-              prepareRow(row);
-              return (
-                <tr {...row.getRowProps()}>
-                  {row.cells.map(cell => {
-                    return (
-                      <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
-                    )
-                  })}
-                </tr>
-              )}
-          )}
-        </tbody>
-      </table>
-    </>
-  )
-}
 
 const columns = [
   {
@@ -292,8 +34,6 @@ const columns = [
   {
     Header: 'Status',
     accessor: 'Status',
-    Filter: SelectColumnFilter,
-    filter: 'includes',
   },
   {
     Header: 'Start Time',
@@ -303,31 +43,8 @@ const columns = [
     Header: 'Node',
     accessor: 'NodeName', 
   },
-  
 ]
 
-const columns2=[
-  {
-    title: 'Namespace',
-    field: 'Namespace',
-  },
-  {
-    title: 'Name',
-    field: 'Name',
-  },
-  {
-    title: 'Status',
-    field: 'Status',
-  },
-  {
-    title: 'Start Time',
-    field: 'StartTime', 
-  },
-  {
-    title: 'Node',
-    field: 'NodeName', 
-  }
-]
 
 const mapPodsData = (podsData) => Object.entries(podsData).map(
   (item) => ({
@@ -339,22 +56,21 @@ const mapPodsData = (podsData) => Object.entries(podsData).map(
   })
 )
 
-const PodsView = (props) => {
-  React.useEffect(() => {
-    console.log('mount');
-    return () => console.log('unmount');
-    }, []) 
-  return (
-    <div className="App">
-      <Styles>
-       <Table columns={columns} data={mapPodsData(props.PodsData)} />
-     </Styles>
-     {/* <MaterialTable columns={columns2} data={mapPodsData(props.PodsData)} title="Demo Title" /> */}
-          {/*JSON.stringify(props)*/}
-    </div>
-  );
-}
+const mockData = [{
+  Namespace: "default",
+  Name: "some_pod_name",
+  Status: "Running",
+  StartTime: "16:20",
+  NodeName: "master.node.com",
+}]
 
+const PodsView = (props) => (
+  <div className="App">
+    <Styles>
+      <Table columns={columns} data={mapPodsData(props.PodsData)} />
+    </Styles>
+  </div>
+)
 
 
 class PodsApp extends React.Component {
@@ -366,7 +82,6 @@ class PodsApp extends React.Component {
     }
     this.PodsData = {}
     this.handleChange = this.handleChange.bind(this)
-    this.startNewGame = this.startNewGame.bind(this)
     this.configureSocket = this.configureSocket.bind(this)
     this.addHandler = this.addHandler.bind(this)
     this.delHandler = this.delHandler.bind(this)
@@ -380,7 +95,7 @@ class PodsApp extends React.Component {
   addHandler(nsConn, msg) {
     // console.log("add")
     // console.dir(msg)
-    if( msg.Room == "pods") {
+    if( msg.Room === "pods") {
       const podEntity = JSON.parse(msg.Body)
       if (podEntity.metadata) {
         // let podsData = {...this.state.PodsData};
@@ -396,7 +111,7 @@ class PodsApp extends React.Component {
   delHandler(nsConn, msg) {
     // console.log("del")
     // console.dir(msg)
-    if( msg.Room == "pods") {
+    if( msg.Room === "pods") {
       const podUID = msg.Body
       if (podUID) {
         // let podsData = {...this.PodsData};
@@ -447,16 +162,6 @@ class PodsApp extends React.Component {
     return conn
   }
 
-  async startNewGame() {
-    //console.dir(this.state);
-    // const res = await RestApi.startNewGame({
-    //   PlayerName: this.state.PlayerName,
-    //   MaxMatchesPrerTurn: this.state.MaxMatchesPrerTurn,
-    //   StartMatchesAmount: this.state.StartMatchesAmount,
-    // })
-    // console.dir(res)
-    //navigate to /game
-  }
 
   async componentDidMount() {
     // const res = await axios.get("/api/k8s/pods/list")
@@ -468,12 +173,12 @@ class PodsApp extends React.Component {
     //this.configureSocket()
     console.log(wsURL)
     this.socket = await this.configureSocket(wsURL)
-    setInterval(this.timerRenderer, 5000)
+    setInterval(this.timerRenderer, 200)
 }
   
 
   render() {
-    return <PodsView OnChange={this.handleChange} NewGameHandler={this.startNewGame} {...this.state}/>
+    return <PodsView OnChange={this.handleChange} {...this.state}/>
   }
 }
 
