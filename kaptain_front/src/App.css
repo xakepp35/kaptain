@@ -63,6 +63,6 @@ td {
   } */
 }
 
-input {
-  width: 100%;
+.Filter-input {
+  width: 90%;
 }

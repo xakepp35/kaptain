@@ -17,6 +17,9 @@ const TableView = (props) => (
     <table>
         <thead>
             <tr>
+                <th>
+                    <input type="checkbox" id="vehicle1" name="vehicle1" value="Bike" />
+                </th>
                 {props.headers.map(column => (
                     <th>
                         <span id={column.accessor} onClick={props.OnSorterClick}>
@@ -27,9 +30,11 @@ const TableView = (props) => (
                 ))}
             </tr>
             <tr>
+                <th></th>
                 {props.headers.map(column => (
                     <th>
                         <input
+                            className="Filter-input"
                             name={column.accessor}
                             value={column.filterValue || ""}
                             onChange={props.OnFilterChange}
@@ -42,6 +47,9 @@ const TableView = (props) => (
         <tbody>
             {props.rows.map((row, i) => (
                 <tr>
+                    <td>
+                        <input type="checkbox" id="vehicle1" name="vehicle1" value="Bike" />
+                    </td>
                     {row.map(cell => (
                         <td>
                             {cell}
