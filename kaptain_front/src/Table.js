@@ -60,8 +60,21 @@ const map_columns = (columns, filters) => (
     }))
 )
 
+const filter_func = (rowValue, filterValue) => (
+    String(rowValue || "")
+    .toLowerCase()
+    .includes(
+        String(filterValue || "")
+        .toLowerCase()
+    )
+)
+
 const map_rows = (data, columns, filters) => (
-    data.map(dataRow=>(
+    data.filter(dataRow => (
+        columns.reduce((fstate, column) => (
+            fstate && filter_func(dataRow[column.accessor], filters[column.accessor])
+        ), true)
+    )).map(dataRow=>(
         columns.map(column=>(
             dataRow[column.accessor]
         ))
