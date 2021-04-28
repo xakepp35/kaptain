@@ -1,46 +1,10 @@
 
 import React from 'react';
-import Table from './Table'
-import { Container, InputGroup, InputGroupAddon, InputGroupText, Input, Button } from 'reactstrap';
-import styled from 'styled-components'
+import PodsTableView from './PodsTableView'
 import neffos from 'neffos.js'
 import axios from 'axios'
 
-const scheme = document.location.protocol === "https:" ? "wss" : "ws";
-const port = document.location.port ? ":" + document.location.port : "";
-const wsURL = scheme + "://" + document.location.hostname + port + "/neffos";
-
 const frontVersion = "0.1"
-
-const Styles = styled.div`
-	padding: 1rem;
-	display: block;
-	max-width: 100%;
-`
-
-const columns = [
-	{
-		Header: 'Namespace',
-		accessor: 'Namespace',
-	},
-	{
-		Header: 'Name',
-		accessor: 'Name',
-	},
-	{
-		Header: 'Status',
-		accessor: 'Status',
-	},
-	{
-		Header: 'Start Time',
-		accessor: 'StartTime', 
-	},
-	{
-		Header: 'Node',
-		accessor: 'NodeName', 
-	},
-]
-
 
 const mapPodsData = (podsData) => Object.entries(podsData).map(
 	(item) => ({
@@ -60,15 +24,6 @@ const mockData = [{
 	StartTime: "16:20",
 	NodeName: "master.node.com",
 }]
-
-const PodsTableView = (props) => (
-	<div className="App">
-		<Styles>
-			<Table columns={columns} data={mapPodsData(props.PodsData)} />
-		</Styles>
-	</div>
-)
-
 
 class PodsTable extends React.Component {
 
@@ -90,8 +45,6 @@ class PodsTable extends React.Component {
 	}
 
 	addHandler(nsConn, msg) {
-		// console.log("add")
-		// console.dir(msg)
 		if( msg.Room === "pods") {
 			const podEntity = JSON.parse(msg.Body)
 			if (podEntity.metadata) {
@@ -106,8 +59,6 @@ class PodsTable extends React.Component {
 	}
 
 	delHandler(nsConn, msg) {
-		// console.log("del")
-		// console.dir(msg)
 		if( msg.Room === "pods") {
 			const podUID = msg.Body
 			if (podUID) {
@@ -123,7 +74,7 @@ class PodsTable extends React.Component {
 
 	async configureSocket(serverEndpoint) {
 		//console.dir(this);
-		const conn = await neffos.dial(wsURL, {
+		const conn = await neffos.dial(serverEndpoint, {
 			default: { // "default" namespace.
 				_OnNamespaceConnected: (nsConn, msg) => {
 					console.log("connected to namespace: " + msg.Namespace);
@@ -158,9 +109,9 @@ class PodsTable extends React.Component {
 		// this.setState({
 		//   PodsData:res.data
 		// })
-		//console.dir(Object.entries(res.data))
-		//this.configureSocket()
-		console.log(wsURL)
+		const scheme = document.location.protocol === "https:" ? "wss" : "ws";
+		const port = document.location.port ? ":" + document.location.port : "";
+		const wsURL = scheme + "://" + document.location.hostname + port + "/neffos";
 		this.socket = await this.configureSocket(wsURL)
 		setInterval(this.timerRenderer, 200)
 	}
@@ -172,7 +123,7 @@ class PodsTable extends React.Component {
 	}
 
 	render() {
-		return <PodsTableView OnChange={this.handleChange} {...this.state}/>
+		return <PodsTableView OnChange={this.handleChange} podsData={mapPodsData(this.state.PodsData)}/>
 	}
 
 }

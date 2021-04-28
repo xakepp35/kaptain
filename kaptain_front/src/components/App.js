@@ -13,7 +13,7 @@ const App = () => (
 				target="_blank"
 				rel="noopener noreferrer"
 			>
-				<img src="/logo.png" className="App-logo" alt="kaptain" />
+				<img src="/logo512.png" className="App-logo" alt="kaptain" />
 				github
 			</a>
 			<NavLink
