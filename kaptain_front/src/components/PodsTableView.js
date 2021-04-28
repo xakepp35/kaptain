@@ -37,10 +37,14 @@ const columns = [
 	},
 ]
 
+const totalPods = (podsData) => podsData.length
+const upPods = (podsData) => podsData.reduce((acc,cur)=>cur.Status==="Running"?acc+1:acc, 0)
+const downPods = (podsData) => podsData.reduce((acc,cur)=>cur.Status!=="Running"?acc+1:acc, 0)
+
 const PodsTableView = (props) => (
 	<div className="App">
 		<ButtonBar>
-			<span>Total: 230 pods (200 up, 30 down)</span>
+			<span>Total: {totalPods(props.podsData)} pods ({upPods(props.podsData)} up, {downPods(props.podsData)} down)</span>
 			<input type="button" name="btnDelete" value="Delete" onClick={props.OnClickDelete} />
 			<input type="button" name="btnEvict" value="Evict" onClick={props.OnClickEvict} />
 		</ButtonBar>
