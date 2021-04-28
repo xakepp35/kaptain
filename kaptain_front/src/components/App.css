@@ -2,7 +2,6 @@
 .App {
     text-align: left !important;
     display: flex;
-    padding: 1rem;
     flex-flow: column nowrap;
     align-items: stretch;
     justify-content: flex-start;
@@ -37,6 +36,7 @@
 }
 
 .App-main {
+    padding: 1rem;
     flex: 1;
     background-color: #204040;
     color: #ffffff;

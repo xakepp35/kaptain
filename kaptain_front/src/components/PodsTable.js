@@ -1,8 +1,11 @@
 
 import React from 'react';
-import PodsTableView from './PodsTableView'
+import { connect } from "react-redux";
+
 import neffos from 'neffos.js'
 import axios from 'axios'
+
+import PodsTableView from './PodsTableView'
 
 const frontVersion = "0.1"
 
@@ -128,4 +131,8 @@ class PodsTable extends React.Component {
 
 }
 
-export default PodsTable
+const mapStateToProps = state => {
+	return { podsData: state.podsData };
+};
+
+export default connect(mapStateToProps)(PodsTable);
