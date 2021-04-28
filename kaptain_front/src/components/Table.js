@@ -46,12 +46,12 @@ const TableView = (props) => (
         </thead>
         <tbody>
             {props.rows.map((row, i) => (
-                <tr>
+                <tr key={row.uid}>
                     <td>
-                        <input type="checkbox" id="vehicle1" name="vehicle1" value="Bike" />
+                        <input type="checkbox" id="vehicle1" name="vehicle1" value="Bike" checked={true}/>
                     </td>
-                    {row.map(cell => (
-                        <td>
+                    {row.columns.map((cell, i) => (
+                        <td key={row.uid+i}>
                             {cell}
                         </td>
                     ))}
@@ -93,11 +93,12 @@ const map_rows = (data, columns, filters, sortAccessor, sortMode) => (
         default:
             return -1
         }
-    }).map(dataRow=>(
-        columns.map(column=>(
+    }).map(dataRow=>({
+        uid: dataRow.UID,
+        columns: columns.map(column=>(
             dataRow[column.accessor]
-        ))
-    ))
+        )),
+    }))
 )
 
 class Table extends React.Component {
