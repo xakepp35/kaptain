@@ -6,6 +6,16 @@ import styled from 'styled-components'
 const Styles = styled.div`
 	display: block;
 	max-width: 100%;
+	overflow-y: auto;
+`
+
+const ControlBar = styled.div`
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	background-color: #101040;
+	padding: 1rem;
+	border: 2px solid white;
 `
 
 const ButtonBar = styled.div`
@@ -17,39 +27,41 @@ const ButtonBar = styled.div`
 const columns = [
 	{
 		Header: 'Namespace',
-		accessor: 'Namespace',
+		accessor: 'namespace',
 	},
 	{
 		Header: 'Name',
-		accessor: 'Name',
+		accessor: 'name',
 	},
 	{
 		Header: 'Status',
-		accessor: 'Status',
+		accessor: 'status',
 	},
 	{
 		Header: 'Start Time',
-		accessor: 'StartTime', 
+		accessor: 'startTime', 
 	},
 	{
 		Header: 'Node',
-		accessor: 'NodeName', 
+		accessor: 'nodeName', 
 	},
 ]
 
 const totalPods = (podsData) => podsData.length
-const upPods = (podsData) => podsData.reduce((acc,cur)=>cur.Status==="Running"?acc+1:acc, 0)
-const downPods = (podsData) => podsData.reduce((acc,cur)=>cur.Status!=="Running"?acc+1:acc, 0)
+const upPods = (podsData) => podsData.reduce((acc,cur)=>cur.status==="Running"?acc+1:acc, 0)
+const downPods = (podsData) => podsData.reduce((acc,cur)=>cur.status!=="Running"?acc+1:acc, 0)
 
 const PodsTableView = (props) => (
 	<div className="App">
-		<ButtonBar>
+		<ControlBar>
+			<ButtonBar>			
+				<input className="Control-button" type="button" name="btnDelete" value="Delete" onClick={props.onClickDelete} />
+				<input className="Control-button" type="button" name="btnEvict" value="Evict" onClick={props.onClickEvict} />
+			</ButtonBar>
 			<span>Total: {totalPods(props.podsData)} pods ({upPods(props.podsData)} up, {downPods(props.podsData)} down)</span>
-			<input type="button" name="btnDelete" value="Delete" onClick={props.OnClickDelete} />
-			<input type="button" name="btnEvict" value="Evict" onClick={props.OnClickEvict} />
-		</ButtonBar>
+		</ControlBar>
 		<Styles>
-			<Table columns={columns} data={props.podsData} />
+			<Table columns={columns} data={props.podsData} selected={props.selected} onSelect={props.onSelect}/>
 		</Styles>
 	</div>
 )

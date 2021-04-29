@@ -43,7 +43,7 @@ const TableView = (props) => (
             {props.rows.map((row, i) => (
                 <tr key={row.uid}>
                     <td>
-                        <input type="checkbox" id="vehicle1" name="vehicle1" value="Bike" checked={true}/>
+                        <input type="checkbox" name={row.uid} onClick={props.onSelect} checked={props.selected[row.uid]?true:false}/>
                     </td>
                     {row.columns.map((cell, i) => (
                         <td key={row.uid+i}>

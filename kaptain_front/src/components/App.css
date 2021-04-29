@@ -9,15 +9,15 @@
 }
 
 .App-logo {
-    height: 64px;
+    height: 4rem;
     pointer-events: none;
-    padding: 10px 5px;
+    /* padding: 10px 5px; */
 }
 
 .App-header {
     background-color: #101040;
     /* min-height: 100vh; */
-    height: 96px;
+     height: 5rem;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -27,8 +27,15 @@
 }
 
 .App-link {
-    padding: 10px 5px;
+    text-decoration: none;
+    padding: 1rem;
+    color: #0080c0;
+}
+
+.App-link:hover {
+    text-decoration: none;
     color: #00b7ff;
+    border-bottom: 1rem solid #00b7ff;
 }
 
 .App-padded {
@@ -55,8 +62,8 @@ tr:hover {
 
 th,
 td {
-    margin: 0;
-    padding: 1px;
+     margin: 0;
+    /*padding: 1px; */
     /* border-bottom: 1px solid black; */
     /* border-right: 1px solid black; */
     /* :last-child {
@@ -66,4 +73,8 @@ td {
 
 .Filter-input {
      width: 90%;
+}
+
+.Control-button {
+    margin: 0 0.5rem;
 }

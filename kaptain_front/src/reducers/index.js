@@ -5,12 +5,12 @@ const initialState = {
 };
 
 const mapPodPayload = (podPayload) => ({
-    UID: podPayload.metadata.uid,
-    Namespace: podPayload.metadata.namespace,
-    Name: podPayload.metadata.name,
-    Status: podPayload.status.phase,
-    StartTime: podPayload.status.startTime,
-    NodeName: podPayload.spec.nodeName,
+    uid: podPayload.metadata.uid,
+    namespace: podPayload.metadata.namespace,
+    name: podPayload.metadata.name,
+    status: podPayload.status.phase,
+    startTime: podPayload.status.startTime,
+    nodeName: podPayload.spec.nodeName,
 })
   
 const rootReducer = (state = initialState, action) => {

@@ -14,7 +14,6 @@ const App = () => (
 				rel="noopener noreferrer"
 			>
 				<img src="/logo512.png" className="App-logo" alt="kaptain" />
-				github
 			</a>
 			<NavLink
 				className="App-link"

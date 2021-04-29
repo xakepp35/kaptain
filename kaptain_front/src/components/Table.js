@@ -34,7 +34,7 @@ const map_rows = (data, columns, filters, sortAccessor, sortMode) => (
             return -1
         }
     }).map(dataRow=>({
-        uid: dataRow.UID,
+        uid: dataRow.uid,
         columns: columns.map(column=>(
             dataRow[column.accessor]
         )),
@@ -85,6 +85,8 @@ class Table extends React.Component {
             rows={map_rows(this.props.data, this.props.columns, this.state.filters, this.state.sortAccessor, this.state.sortMode)}
             sortAccessor={this.state.sortAccessor}
             sortMode={this.state.sortMode}
+            selected={this.props.selected}
+            onSelect={this.props.onSelect}
         />
     }
 
